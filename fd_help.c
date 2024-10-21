@@ -27,6 +27,8 @@ int main () {
         return -3;
     }
 
+	execve("./riddle", NULL, NULL);
+
 	return 0;
 }
 
