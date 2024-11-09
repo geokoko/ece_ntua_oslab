@@ -1,0 +1,49 @@
+
+Challenge   0: 'Hello there'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge   1: 'Gatekeeper'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge   2: 'A time to kill'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge   3: 'what is the answer to life the universe and everything?'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge   4: 'First-in, First-out'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge   5: 'my favourite fd is 99'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge   6: 'ping pong'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge   7: 'What's in a name?'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge   8: 'Big Data'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge   9: 'Connect'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge  10: 'ESP'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge  11: 'ESP-2'
+[36mWelcome back challenger. You may pass.[0m
+
+Challenge  12: 'A delicate change'
+Hint:          'Do only what is required, nothing more, nothing less'.
+Hint:          'mmap'.
+I want to find the char 'V' at 0x799d2909506f
+[31mFAIL[0m
+
+Challenge  13: 'Bus error'
+Hint:          'Memquake! Don't lose the pages beneath your something something'.
+Hint:          'mmap, where have my pages gone?'.
+[31mFAIL[0m
+
+Next challenge locked. Complete more challenges.
