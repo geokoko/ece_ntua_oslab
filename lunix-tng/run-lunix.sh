@@ -66,12 +66,19 @@ cleanup() {
 	echo "Cleaned kernel object files"
 }
 
+showoutput() {
+	echo ""
+	echo "dmesg: "
+	dmesg -w | grep "chrdev"
+}
+
 case $1 in
     run)
         cleanup
         load_driver
         create_device_nodes
         attach_line_discipline
+		showoutput
         ;;
     cleanup)
         cleanup
