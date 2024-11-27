@@ -1,5 +1,6 @@
 #!/bin/bash
 
+LUNIX_PATH="/home/user/shared/oslab/lunix-tng"
 DRIVER_NAME="lunix"
 MODULE_NAME="./lunix.ko"
 DEVICE_NODE_SCRIPT="./mk-lunix-devs.sh"
@@ -12,6 +13,9 @@ fi
 
 
 load_driver() {
+	echo "Compiling the driver..."
+	cd $LUNIX_PATH
+	make
 	echo "Loading the driver..."
 	insmod $MODULE_NAME
 	if [[ $? -ne 0 ]]; then
@@ -53,8 +57,13 @@ attach_line_discipline() {
 
 cleanup() {
 	echo "Cleaning up..."
-	rmmod $DRIVER_NAME 2>/dev/null
+	rmmod --force $DRIVER_NAME 2>/dev/null
 	echo "Driver unloaded."
+	dmesg -C
+	echo "Kernel buffer cleaned."
+	cd $LUNIX_PATH
+	make clean
+	echo "Cleaned kernel object files"
 }
 
 case $1 in
