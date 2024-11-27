@@ -26,12 +26,14 @@ create_device_nodes() {
 
 	if [[ -f $DEVICE_NODE_SCRIPT ]]; then
 		bash $DEVICE_NODE_SCRIPT
-		if [[ $? -eq 0 ]]; then
+		exit_code=$?
+		if [[ $exit_code -eq 0 ]]; then
 			echo "Device nodes created successfully."
-		elif [[ $? -eq 17 ]]; then
+		elif [[ $exit_code -eq 17 ]]; then
 			echo "Error: Device nodes already exist (EEXIST)"
 		else
 			echo "Error: An unexpected error occured"
+			exit $exit_code
 		fi
 	else
 		echo "Error: Device node script ($DEVICE_NODE_SCRIPT) not found!"
