@@ -95,22 +95,30 @@ static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 
 static int lunix_chrdev_open(struct inode *inode, struct file *filp)
 {
-	/* Declarations */
-	/* ? */
+	unsigned int minor = iminor(inode); // extract minor number from passed inode
+	unsigned int major = imajor(inode); // extract major number from passed inode
+	unsigned int sensor_id = minor >> 3;       // Extract sensor ID (divide minor_no by 3 and see which sensor number it has)
+	unsigned int measurement_type = minor & 7; // Extract measurement type (take the modulo of the division with 8, which will give the measurement type)
+	
+	//struct lunix_sensor_struct *sensor;
 	int ret;
 
-	debug("entering\n");
+	debug("entering file with {major, minor}: {%d, %d}\n", major, minor);
+	debug("sensor_id = %d and Measurement Type = %d", sensor_id, measurement_type);
 	ret = -ENODEV;
 	if ((ret = nonseekable_open(inode, filp)) < 0)
 		goto out;
-
-	/*
-	 * Associate this open file with the relevant sensor based on
-	 * the minor number of the device node [/dev/sensor<NO>-<TYPE>]
-	 */
 	
-	/* Allocate a new Lunix character device private state structure */
-	/* ? */
+	/* Allocate a new Lunix character device private state structure (including its buffer) */
+	struct lunix_chrdev_state_struct* state;
+	state = kmalloc(sizeof(*state), GFP_KERNEL);
+	if (!state) {
+		ret = -ENOMEM // error no memory
+		goto out;
+	}
+
+	filp->private_data = state; // point to the state buffer
+
 out:
 	debug("leaving, with ret = %d\n", ret);
 	return ret;

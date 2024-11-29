@@ -37,7 +37,7 @@ create_device_nodes() {
 			echo "Error: Device nodes already exist (EEXIST)"
 		else
 			echo "Error: An unexpected error occured"
-			exit $exit_code
+	exit $exit_code
 		fi
 	else
 		echo "Error: Device node script ($DEVICE_NODE_SCRIPT) not found!"
@@ -47,13 +47,18 @@ create_device_nodes() {
 
 attach_line_discipline() {
 	echo "Attaching line discipline..."
-	$LINE_DISCIPLINE_CMD
+	$LINE_DISCIPLINE_CMD &
+	LINE_DISCIPLINE_PID=$!
 	if [[ $? -ne 0 ]]; then
 		echo "Error: Failed to attach line discipline!"
 		exit 1
 	fi
-	echo "Line discipline attached successfully."
+	echo "Line discipline attached successfully. (PID = $LINE_DISCIPLINE_PID)"
+	trap "echo 'Stopping line discipline...'; kill $LINE_DISCIPLINE_PID; exit" SIGINT
+	
+	wait $LINE_DISCIPLINE_PID
 }
+
 
 cleanup() {
 	echo "Cleaning up..."
@@ -68,8 +73,12 @@ cleanup() {
 
 showoutput() {
 	echo ""
-	echo "dmesg: "
-	dmesg -w | grep "chrdev"
+	echo "Monitoring kernel logs for Lunix driver (dmesg output)... "
+	echo "Press Ctrl+C to stop monitoring."
+	dmesg -w
+	DMESG_PID=$!
+	trap "echo 'Stopping processes...'; kill $DMESG_PID $LINE_DISCIPLINE_PID; exit" SIGINT
+	wait $DMESG_PID
 }
 
 case $1 in
