@@ -11,7 +11,6 @@ if [[ "$EUID" -ne 0 ]]; then
 	exit 1
 fi
 
-
 load_driver() {
 	echo "Compiling the driver..."
 	cd $LUNIX_PATH
@@ -54,9 +53,6 @@ attach_line_discipline() {
 		exit 1
 	fi
 	echo "Line discipline attached successfully. (PID = $LINE_DISCIPLINE_PID)"
-	trap "echo 'Stopping line discipline...'; kill $LINE_DISCIPLINE_PID; exit" SIGINT
-	
-	wait $LINE_DISCIPLINE_PID
 }
 
 
@@ -76,9 +72,6 @@ showoutput() {
 	echo "Monitoring kernel logs for Lunix driver (dmesg output)... "
 	echo "Press Ctrl+C to stop monitoring."
 	dmesg -w
-	DMESG_PID=$!
-	trap "echo 'Stopping processes...'; kill $DMESG_PID $LINE_DISCIPLINE_PID; exit" SIGINT
-	wait $DMESG_PID
 }
 
 case $1 in
