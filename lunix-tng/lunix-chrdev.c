@@ -42,13 +42,14 @@ struct cdev lunix_chrdev_cdev;
  * the compiler happy. This function is not yet used, because this helpcode
  * is a stub.
  */
-static int __attribute__((unused)) lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *);
+static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *);
 static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *state)
 {
 	struct lunix_sensor_struct *sensor;
 	
 	WARN_ON ( !(sensor = state->sensor));
 	/* ? */
+	if(state->buf_timestamp != sensor->msr_data[TEMP]->last_update) return 1;
 
 	/* The following return is bogus, just for the stub to compile */
 	return 0; /* ? */
@@ -61,29 +62,60 @@ static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *st
  */
 static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 {
-	struct lunix_sensor_struct __attribute__((unused)) *sensor;
-	
-	debug("leaving\n");
-
+	struct lunix_sensor_struct  *sensor;
+	uint32_t raw_data;
+	uint32_t time_stamp;
 	/*
 	 * Grab the raw data quickly, hold the
 	 * spinlock for as little as possible.
 	 */
+	WARN_ON ( !(sensor = state->sensor));
+
+	spin_lock(&sensor->lock);
+	debug("It is locked!");
+	raw_data = sensor -> msr_data[state->type]->values[0];
+	time_stamp = sensor -> msr_data[sensor->type]->last_update; 
+	spin_unlock(&sensor->lock);
+	debug("It is unlocked now!");
+	
 	/* ? */
 	/* Why use spinlocks? See LDD3, p. 119 */
 
 	/*
 	 * Any new data available?
 	 */
-	/* ? */
 
+	if(!lunix_chrdev_state_needs_refresh(&state)) return -EAGAIN;
+	/* ? */
+	
 	/*
 	 * Now we can take our time to format them,
 	 * holding only the private state semaphore
 	 */
+	if (down_interruptible(&state->lock))
+		return -ERESTARTSYS;
 
+	state -> buf_timestamp = time_stamp;
+
+	switch (state->type) {
+    case BATT: // Battery level
+        snprintf(state->buf_data, LUNIX_CHRDEV_BUFSZ, "%.2ln\n",
+                 lookup_voltage[raw_data]);
+        break;
+    case TEMP: // Temperature
+        snprintf(state->buf_data, LUNIX_CHRDEV_BUFSZ, "%.2ln\n",
+                 lookup_temperature[raw_data]);
+        break;
+    case LIGHT: // Light intensity
+        snprintf(state->buf_data, LUNIX_CHRDEV_BUFSZ, "%.2ln\n",
+                 lookup_light[raw_data]);
+        break;
+    default:
+		up(&state->lock);
+        return -EINVAL; // Invalid measurement type
+    }
 	/* ? */
-
+	up(&state->lock);
 	debug("leaving\n");
 	return 0;
 }
@@ -118,6 +150,8 @@ static int lunix_chrdev_open(struct inode *inode, struct file *filp)
 	}
 
 	filp->private_data = state; // point to the state buffer
+
+	sema_init( &state->lock, 1);// initialize semaphore
 
 out:
 	debug("leaving, with ret = %d\n", ret);

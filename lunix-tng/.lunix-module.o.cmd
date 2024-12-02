@@ -1,8 +1,8 @@
-savedcmd_/home/user/shared/oslab/lunix-tng/lunix-module.o := gcc -Wp,-MMD,/home/user/shared/oslab/lunix-tng/.lunix-module.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/compiler-version.h -include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h -D__KERNEL__ -fmacro-prefix-map=./= -Werror -std=gnu11 -fshort-wchar -funsigned-char -fno-common -fno-PIE -fno-strict-aliasing -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -fcf-protection=branch -fno-jump-tables -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -Wno-sign-compare -fno-asynchronous-unwind-tables -mindirect-branch=thunk-extern -mindirect-branch-register -mfunction-return=thunk-extern -fno-jump-tables -fpatchable-function-entry=16,16 -fno-delete-null-pointer-checks -O2 -fno-allow-store-data-races -fstack-protector-strong -fomit-frame-pointer -fno-stack-clash-protection -falign-functions=16 -fno-strict-overflow -fno-stack-check -fconserve-stack -Wall -Wundef -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Werror=strict-prototypes -Wno-format-security -Wno-trigraphs -Wno-frame-address -Wno-address-of-packed-member -Wmissing-declarations -Wmissing-prototypes -Wframe-larger-than=2048 -Wno-main -Wvla -Wno-pointer-sign -Wcast-function-type -Wno-stringop-overflow -Wno-array-bounds -Wno-alloc-size-larger-than -Wimplicit-fallthrough=5 -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wenum-conversion -Wextra -Wunused -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-packed-not-aligned -Wno-format-overflow -Wno-format-truncation -Wno-stringop-truncation -Wno-override-init -Wno-missing-field-initializers -Wno-type-limits -Wno-shift-negative-value -Wno-maybe-uninitialized -Wno-sign-compare -Wno-unused-parameter -g -DLUNIX_DEBUG=1 -Werror  -DMODULE  -DKBUILD_BASENAME='"lunix_module"' -DKBUILD_MODNAME='"lunix"' -D__KBUILD_MODNAME=kmod_lunix -c -o /home/user/shared/oslab/lunix-tng/lunix-module.o /home/user/shared/oslab/lunix-tng/lunix-module.c  
+savedcmd_/home/user/shared/ece_ntua_oslab/lunix-tng/lunix-module.o := gcc -Wp,-MMD,/home/user/shared/ece_ntua_oslab/lunix-tng/.lunix-module.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/compiler-version.h -include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h -D__KERNEL__ -fmacro-prefix-map=./= -Werror -std=gnu11 -fshort-wchar -funsigned-char -fno-common -fno-PIE -fno-strict-aliasing -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -fcf-protection=branch -fno-jump-tables -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -Wno-sign-compare -fno-asynchronous-unwind-tables -mindirect-branch=thunk-extern -mindirect-branch-register -mfunction-return=thunk-extern -fno-jump-tables -fpatchable-function-entry=16,16 -fno-delete-null-pointer-checks -O2 -fno-allow-store-data-races -fstack-protector-strong -fomit-frame-pointer -fno-stack-clash-protection -falign-functions=16 -fno-strict-overflow -fno-stack-check -fconserve-stack -Wall -Wundef -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Werror=strict-prototypes -Wno-format-security -Wno-trigraphs -Wno-frame-address -Wno-address-of-packed-member -Wmissing-declarations -Wmissing-prototypes -Wframe-larger-than=2048 -Wno-main -Wvla -Wno-pointer-sign -Wcast-function-type -Wno-stringop-overflow -Wno-array-bounds -Wno-alloc-size-larger-than -Wimplicit-fallthrough=5 -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wenum-conversion -Wextra -Wunused -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-packed-not-aligned -Wno-format-overflow -Wno-format-truncation -Wno-stringop-truncation -Wno-override-init -Wno-missing-field-initializers -Wno-type-limits -Wno-shift-negative-value -Wno-maybe-uninitialized -Wno-sign-compare -Wno-unused-parameter -g -DLUNIX_DEBUG=1 -Werror  -DMODULE  -DKBUILD_BASENAME='"lunix_module"' -DKBUILD_MODNAME='"lunix"' -D__KBUILD_MODNAME=kmod_lunix -c -o /home/user/shared/ece_ntua_oslab/lunix-tng/lunix-module.o /home/user/shared/ece_ntua_oslab/lunix-tng/lunix-module.c  
 
-source_/home/user/shared/oslab/lunix-tng/lunix-module.o := /home/user/shared/oslab/lunix-tng/lunix-module.c
+source_/home/user/shared/ece_ntua_oslab/lunix-tng/lunix-module.o := /home/user/shared/ece_ntua_oslab/lunix-tng/lunix-module.c
 
-deps_/home/user/shared/oslab/lunix-tng/lunix-module.o := \
+deps_/home/user/shared/ece_ntua_oslab/lunix-tng/lunix-module.o := \
   include/linux/compiler-version.h \
     $(wildcard include/config/CC_VERSION_TEXT) \
   include/linux/kconfig.h \
@@ -1037,7 +1037,7 @@ deps_/home/user/shared/oslab/lunix-tng/lunix-module.o := \
     $(wildcard include/config/HAVE_MOD_ARCH_SPECIFIC) \
     $(wildcard include/config/MODULES_USE_ELF_REL) \
     $(wildcard include/config/MODULES_USE_ELF_RELA) \
-  /home/user/shared/oslab/lunix-tng/lunix.h \
+  /home/user/shared/ece_ntua_oslab/lunix-tng/lunix.h \
   include/linux/tty.h \
     $(wildcard include/config/TTY) \
   include/uapi/linux/major.h \
@@ -1189,10 +1189,10 @@ deps_/home/user/shared/oslab/lunix-tng/lunix-module.o := \
   include/linux/tty_buffer.h \
   include/uapi/linux/tty_flags.h \
   include/uapi/linux/tty.h \
-  /home/user/shared/oslab/lunix-tng/lunix-chrdev.h \
-  /home/user/shared/oslab/lunix-tng/lunix-ldisc.h \
-  /home/user/shared/oslab/lunix-tng/lunix-protocol.h \
+  /home/user/shared/ece_ntua_oslab/lunix-tng/lunix-chrdev.h \
+  /home/user/shared/ece_ntua_oslab/lunix-tng/lunix-ldisc.h \
+  /home/user/shared/ece_ntua_oslab/lunix-tng/lunix-protocol.h \
 
-/home/user/shared/oslab/lunix-tng/lunix-module.o: $(deps_/home/user/shared/oslab/lunix-tng/lunix-module.o)
+/home/user/shared/ece_ntua_oslab/lunix-tng/lunix-module.o: $(deps_/home/user/shared/ece_ntua_oslab/lunix-tng/lunix-module.o)
 
-$(deps_/home/user/shared/oslab/lunix-tng/lunix-module.o):
+$(deps_/home/user/shared/ece_ntua_oslab/lunix-tng/lunix-module.o):
