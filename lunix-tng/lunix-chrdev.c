@@ -46,14 +46,8 @@ static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *);
 static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *state)
 {
 	struct lunix_sensor_struct *sensor;
-	
-<<<<<<< HEAD
+
 	WARN_ON (!(sensor = state->sensor));
-=======
-	WARN_ON ( !(sensor = state->sensor));
-	/* ? */
-	if(state->buf_timestamp != sensor->msr_data[TEMP]->last_update) return 1;
->>>>>>> origin/master
 
 	if (!sensor->msr_data[state->type]) {  /* No measurements available, so return */
 		WARN_ON(1);
@@ -73,20 +67,13 @@ static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *st
  */
 static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 {
-<<<<<<< HEAD
-	struct lunix_sensor_struct __attribute__((unused)) *sensor;
-	debug("leaving\n");
-
-=======
 	struct lunix_sensor_struct  *sensor;
 	uint32_t raw_data;
 	uint32_t time_stamp;
->>>>>>> origin/master
 	/*
 	 * Grab the raw data quickly, hold the
 	 * spinlock for as little as possible.
 	 */
-<<<<<<< HEAD
 
 	WARN_ON(!(sensor = state->sensor));
 
@@ -100,19 +87,6 @@ static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 	debug("Unlocked critical section");
 	
 	/* Why use spinlocks? Use spinlocks to handle interrupts */
-=======
-	WARN_ON ( !(sensor = state->sensor));
-
-	spin_lock(&sensor->lock);
-	debug("It is locked!");
-	raw_data = sensor -> msr_data[state->type]->values[0];
-	time_stamp = sensor -> msr_data[sensor->type]->last_update; 
-	spin_unlock(&sensor->lock);
-	debug("It is unlocked now!");
-	
-	/* ? */
-	/* Why use spinlocks? See LDD3, p. 119 */
->>>>>>> origin/master
 
 	/*
 	 * Check for any new data available?
