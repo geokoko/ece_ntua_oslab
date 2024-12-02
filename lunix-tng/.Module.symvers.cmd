@@ -1,0 +1,1 @@
+savedcmd_/home/user/shared/ece_ntua_oslab/lunix-tng/Module.symvers :=  scripts/mod/modpost -M        -o /home/user/shared/ece_ntua_oslab/lunix-tng/Module.symvers -T /home/user/shared/ece_ntua_oslab/lunix-tng/modules.order -i Module.symvers -e 
