@@ -4,7 +4,7 @@
  * Implementation of character devices
  * for Lunix:TNG
  *
- * < Konstantinos Fratzeskos >
+ * <geokoko, Konstantinos Fratzeskos >
  *
  */
 
@@ -47,11 +47,17 @@ static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *st
 {
 	struct lunix_sensor_struct *sensor;
 	
-	WARN_ON ( !(sensor = state->sensor));
-	/* ? */
+	WARN_ON (!(sensor = state->sensor));
 
-	/* The following return is bogus, just for the stub to compile */
-	return 0; /* ? */
+	if (!sensor->msr_data[state->type]) {  /* No measurements available, so return */
+		WARN_ON(1);
+		return 0;
+	}
+
+	if (state->buf_timestamp == 0 || state->buf_timestamp != sensor->msr_data[sensor->type]->last_update) 
+		return 1;
+
+	return 0; /* No refresh needed */
 }
 
 /*
@@ -62,20 +68,29 @@ static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *st
 static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 {
 	struct lunix_sensor_struct __attribute__((unused)) *sensor;
-	
 	debug("leaving\n");
 
 	/*
 	 * Grab the raw data quickly, hold the
 	 * spinlock for as little as possible.
 	 */
-	/* ? */
-	/* Why use spinlocks? See LDD3, p. 119 */
+
+	WARN_ON(!(sensor = state->sensor));
+
+	spin_lock(&sensor->lock);
+	debug("Locked critical section");
+
+	uint32_t raw_data = sensor->msr_data[state->type]->values[0];
+	uint32_t timestamp = sensor->msr_data[state->type]->last_update;
+
+	spin_unlock(&sensor->lock);
+	debug("Unlocked critical section");
+	
+	/* Why use spinlocks? Use spinlocks to handle interrupts */
 
 	/*
-	 * Any new data available?
+	 * Check for any new data available?
 	 */
-	/* ? */
 
 	/*
 	 * Now we can take our time to format them,
@@ -113,11 +128,17 @@ static int lunix_chrdev_open(struct inode *inode, struct file *filp)
 	struct lunix_chrdev_state_struct* state;
 	state = kmalloc(sizeof(*state), GFP_KERNEL);
 	if (!state) {
-		ret = -ENOMEM // error no memory
+		ret = -ENOMEM; // error no memory
 		goto out;
 	}
 
-	filp->private_data = state; // point to the state buffer
+	if ((state->type = measurement_type) >= N_LUNIX_MSR) {
+		debug("Invalid measurement type: %u\n", state->type);
+		kfree(state);
+		return -EINVAL;
+	}
+
+	filp->private_data = state; // (fd) private data now points to the state buffer
 
 out:
 	debug("leaving, with ret = %d\n", ret);
@@ -138,7 +159,8 @@ static long lunix_chrdev_ioctl(struct file *filp, unsigned int cmd, unsigned lon
 static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t cnt, loff_t *f_pos)
 {
 	ssize_t ret;
-
+	char *dummy = "Hello World!\n";
+	size_t len = strlen(dummy);
 	struct lunix_sensor_struct *sensor;
 	struct lunix_chrdev_state_struct *state;
 
@@ -147,6 +169,26 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 
 	sensor = state->sensor;
 	WARN_ON(!sensor);
+
+	debug("Entering read\n");
+
+	/*
+	Dummy read function
+	*/
+
+	if (*f_pos >= len)
+		goto out;
+
+	if (*f_pos + cnt > len)
+		cnt = len - *f_pos; // count only until the end of the buffer
+	
+	if (copy_to_user(usrbuf, dummy, len)) {
+		ret = -EFAULT;
+		goto out;
+	}
+
+	*f_pos += cnt; 
+	ret = cnt;	
 
 	/* Lock? */
 	/*
@@ -177,8 +219,8 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 	 * It's true, this helpcode is a stub, and doesn't use them properly.
 	 * Remove them when you've started working on this code.
 	 */
-	ret = -ENODEV;
-	goto out;
+	//ret = -ENODEV;
+	//goto out;
 out:
 	/* Unlock? */
 	return ret;
