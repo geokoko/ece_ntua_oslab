@@ -102,7 +102,7 @@ static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 	if (down_interruptible(&state->lock))
 		return -ERESTARTSYS;
 
-	state -> buf_timestamp = time_stamp;
+	state->buf_timestamp = time_stamp;
 
 	switch (state->type) {
     case BATT: // Battery level
@@ -139,32 +139,53 @@ static int lunix_chrdev_open(struct inode *inode, struct file *filp)
 	unsigned int sensor_id = minor >> 3;       // Extract sensor ID (divide minor_no by 3 and see which sensor number it has)
 	unsigned int measurement_type = minor & 7; // Extract measurement type (take the modulo of the division with 8, which will give the measurement type)
 	
+	/* Allocate a new Lunix character device private state structure (including its buffer) */
+	struct lunix_chrdev_state_struct* state;
+
 	//struct lunix_sensor_struct *sensor;
 	int ret;
 
 	debug("entering file with {major, minor}: {%d, %d}\n", major, minor);
 	debug("sensor_id = %d and Measurement Type = %d", sensor_id, measurement_type);
-	ret = -ENODEV;
-	if ((ret = nonseekable_open(inode, filp)) < 0)
-		goto out;
 	
-	/* Allocate a new Lunix character device private state structure (including its buffer) */
-	struct lunix_chrdev_state_struct* state;
-	state = kmalloc(sizeof(*state), GFP_KERNEL);
-	if (!state) {
+	if (!(state = kmalloc(sizeof(struct lunix_chrdev_state_struct), GFP_KERNEL))) {
 		ret = -ENOMEM; // error no memory
 		goto out;
 	}
 
-	if ((state->type = measurement_type) >= N_LUNIX_MSR) {
+	/* Initializing character device state struct*/ 
+	if (measurement_type >= N_LUNIX_MSR) {
 		debug("Invalid measurement type: %u\n", state->type);
 		kfree(state);
-		return -EINVAL;
+		ret = -EINVAL;
+		goto out;
 	}
 
-	filp->private_data = state; // (fd) private data now points to the state buffer
+	if (sensor_id >= lunix_sensor_cnt) {
+		debug("Invalid sensor initialization");
+		kfree(state);
+		ret = -ENODEV;
+		goto out;
+	}
 
-	sema_init( &state->lock, 1);// initialize semaphore
+	state->sensor = lunix_sensors + sensor_id; // Store which sensor we want to open
+	state->type = measurement_type;   // Store measurement type
+	state->buf_lim = 0;               // No data initially in the buffer
+	state->buf_timestamp = 0;         // No timestamp yet
+	memset(state->buf_data, 0, LUNIX_CHRDEV_BUFSZ);  // Clear the buffer
+	sema_init(&state->lock, 1);  // Set initial semaphore count to 1
+
+	filp->private_data = state; // (fd) private data now points to the state buffer
+	
+	debug("open successful for sensor %d, type %d\n", sensor_id, measurement_type);
+
+	/* Register as non-seekable */
+    if ((ret = nonseekable_open(inode, filp)) < 0) {
+        kfree(state);
+        goto out;
+    }
+
+	ret = 0;
 
 out:
 	debug("leaving, with ret = %d\n", ret);
@@ -185,8 +206,6 @@ static long lunix_chrdev_ioctl(struct file *filp, unsigned int cmd, unsigned lon
 static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t cnt, loff_t *f_pos)
 {
 	ssize_t ret;
-	char *dummy = "Hello World!\n";
-	size_t len = strlen(dummy);
 	struct lunix_sensor_struct *sensor;
 	struct lunix_chrdev_state_struct *state;
 
@@ -198,15 +217,14 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 
 	debug("Entering read\n");
 
-	/*
-	Dummy read function
-	*/
+	if (down_interruptible(&dev->sem))
+		return -ERESTARTSYS;
 
 	if (*f_pos >= len)
 		goto out;
 
 	if (*f_pos + cnt > len)
-		cnt = len - *f_pos; // count only until the end of the buffer
+		cnt =  - *f_pos; // count only until the end of the buffer
 	
 	if (copy_to_user(usrbuf, dummy, len)) {
 		ret = -EFAULT;
