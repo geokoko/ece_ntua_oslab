@@ -217,24 +217,11 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 
 	debug("Entering read\n");
 
-	if (down_interruptible(&dev->sem))
-		return -ERESTARTSYS;
-
-	if (*f_pos >= len)
-		goto out;
-
-	if (*f_pos + cnt > len)
-		cnt =  - *f_pos; // count only until the end of the buffer
-	
-	if (copy_to_user(usrbuf, dummy, len)) {
-		ret = -EFAULT;
+	/* Acquire the lock */
+	if (down_interruptible(&dev->sem)) {
+		ret = -ERESTARTSYS;
 		goto out;
 	}
-
-	*f_pos += cnt; 
-	ret = cnt;	
-
-	/* Lock? */
 	/*
 	 * If the cached character device state needs to be
 	 * updated by actual sensor data (i.e. we need to report
@@ -244,29 +231,36 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 		while (lunix_chrdev_state_update(state) == -EAGAIN) {
 			/* ? */
 			/* The process needs to sleep */
-			/* See LDD3, page 153 for a hint */
+			up(&state->lock);
+
+			if (down_interruptible(&dev->sem)) {
+				ret = -ERESTARTSYS;
+				goto out;
+			}
 		}
 	}
 
-	/* End of file */
-	/* ? */
-	
 	/* Determine the number of cached bytes to copy to userspace */
-	/* ? */
+	bytes_to_copy = buf_lim - *f_pos; 
 
-	/* Auto-rewind on EOF mode? */
-	/* ? */
+	/* Handle EOF mode */
+	if (bytes_to_copy <= 0) {
+		*f_pos = 0;
+		bytes_to_copy = buf_lim;
+		ret = 0;
+		goto out;
+	}
 
-	/*
-	 * The next two lines  are just meant to suppress a compiler warning
-	 * for the "unused" out: label, and for the uninitialized "ret" value.
-	 * It's true, this helpcode is a stub, and doesn't use them properly.
-	 * Remove them when you've started working on this code.
-	 */
-	//ret = -ENODEV;
-	//goto out;
+	if (copy_to_user(usrbuf, buf_data + *f_pos, bytes_to_copy)) {
+		ret = -EFAULT;
+	}
+
+	*f_pos += bytes_to_copy;
+
+	ret = 0;
+	goto out;
 out:
-	/* Unlock? */
+	down(&state->lock);
 	return ret;
 }
 
