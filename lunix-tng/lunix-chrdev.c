@@ -196,8 +196,19 @@ out:
 
 static int lunix_chrdev_release(struct inode *inode, struct file *filp)
 {
-	kfree(filp->private_data);
-	return 0;
+	struct lunix_chrdev_state_struct *state = filp->private_data;
+
+    if (!state) {
+        pr_err("lunix_chrdev_release: private_data is NULL\n");
+        return -EINVAL; // Invalid state
+    }
+
+    /* Free the allocated memory for the device state */
+    kfree(state);
+    filp->private_data = NULL; // Clear the pointer to avoid use-after-free
+
+    pr_debug("lunix_chrdev_release: released resources successfully\n");
+    return 0;
 }
 
 static long lunix_chrdev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
