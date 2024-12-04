@@ -33,9 +33,9 @@ create_device_nodes() {
 		if [[ $exit_code -eq 0 ]]; then
 			echo "Device nodes created successfully."
 		elif [[ $exit_code -eq 17 ]]; then
-			echo "Error: Device nodes already exist (EEXIST)"
+			echo "Error: Device nodes already exist with exit code: $exit_code"
 		else
-			echo "Error: An unexpected error occured"
+			echo "Error: An unexpected error occured with exit code: $exit_code"
 	exit $exit_code
 		fi
 	else
