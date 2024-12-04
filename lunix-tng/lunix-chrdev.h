@@ -34,7 +34,7 @@ struct lunix_chrdev_state_struct {
 	struct lunix_sensor_struct *sensor;
 
 	/* A buffer used to hold cached textual info */
-	int buf_lim;
+	size_t buf_lim;
 	unsigned char buf_data[LUNIX_CHRDEV_BUFSZ];
 	uint32_t buf_timestamp;
 

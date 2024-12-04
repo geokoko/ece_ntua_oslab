@@ -72,7 +72,7 @@ showoutput() {
 	echo ""
 	echo "Monitoring kernel logs for Lunix driver (dmesg output)... "
 	echo "Press Ctrl+C to stop monitoring."
-	dmesg -w
+	dmesg -w | grep "chrdev"
 }
 
 case $1 in
