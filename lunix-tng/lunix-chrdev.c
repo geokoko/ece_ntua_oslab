@@ -92,8 +92,10 @@ static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 	 * Check for any new data available?
 	 */
 
-	if(!lunix_chrdev_state_needs_refresh(&state)) return -EAGAIN;
-	/* ? */
+	if(!lunix_chrdev_state_needs_refresh(&state)) {
+		ret = -EAGAIN;
+		goto out;
+	}
 	
 	/*
 	 * Now we can take our time to format them,
@@ -121,7 +123,7 @@ static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 		up(&state->lock);
         return -EINVAL; // Invalid measurement type
     }
-	/* ? */
+
 	up(&state->lock);
 	debug("leaving\n");
 	return 0;
@@ -194,7 +196,7 @@ out:
 
 static int lunix_chrdev_release(struct inode *inode, struct file *filp)
 {
-	/* ? */
+	kfree(filp->private_data);
 	return 0;
 }
 
@@ -218,7 +220,7 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 	debug("Entering read\n");
 
 	/* Acquire the lock */
-	if (down_interruptible(&dev->sem)) {
+	if (down_interruptible(&state->lock)) {
 		ret = -ERESTARTSYS;
 		goto out;
 	}
@@ -233,7 +235,7 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 			/* The process needs to sleep */
 			up(&state->lock);
 
-			if (down_interruptible(&dev->sem)) {
+			if (down_interruptible(&state->lock)) {
 				ret = -ERESTARTSYS;
 				goto out;
 			}
@@ -241,17 +243,17 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 	}
 
 	/* Determine the number of cached bytes to copy to userspace */
-	bytes_to_copy = buf_lim - *f_pos; 
+	int bytes_to_copy = state->buf_lim - *f_pos; 
 
 	/* Handle EOF mode */
 	if (bytes_to_copy <= 0) {
 		*f_pos = 0;
-		bytes_to_copy = buf_lim;
+		bytes_to_copy = state->buf_lim;
 		ret = 0;
 		goto out;
 	}
 
-	if (copy_to_user(usrbuf, buf_data + *f_pos, bytes_to_copy)) {
+	if (copy_to_user(usrbuf, state->buf_data + *f_pos, bytes_to_copy)) {
 		ret = -EFAULT;
 	}
 
