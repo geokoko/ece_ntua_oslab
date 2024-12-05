@@ -112,7 +112,7 @@ static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 			break;
 		case LIGHT: // Light intensity
 			state->buf_lim = snprintf(state->buf_data, LUNIX_CHRDEV_BUFSZ, "%ld.%03ld\n",
-					lookup_light[raw_data]/1000, lookup_temperature[raw_data]%1000);
+					lookup_light[raw_data]/1000, lookup_light[raw_data]%1000);
 			break;
 		case N_LUNIX_MSR:
 			ret = -EFAULT;
@@ -243,19 +243,32 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 	 */
 	if (*f_pos == 0) {
 		while (lunix_chrdev_state_update(state) == -EAGAIN) {
-			/* The process needs to sleep */
+			/* The process needs to sleep 
+			 * as new data is unavailable
+			 */
 
 			/* Release the semaphore before sleeping */
 			up(&state->lock);
 
+			/* If the file is opened in a non-blocking mode, return -EAGAIN */
+			if (filp->f_flags & O_NONBLOCK) {
+				ret = -EAGAIN;
+				goto out;
+			}
+
 			/* Sleeping... 
-			 * Inserting processes into priority queue to avoid race conditions when waking up
+			 * Inserting processes into queue to avoid race conditions when waking up
+			 */
+
+			/* sensor->wq is a wait queue associated with the sensor structure. 
+			 * It's used to suspend the process in the read function until new sensor data becomes available.
 			 */
 			if (wait_event_interruptible(sensor->wq, lunix_chrdev_state_needs_refresh(state))) {
-                ret = -ERESTARTSYS; /* signal: tell the fs layer to handle it */
+                ret = -ERESTARTSYS; /* restart process if interrupt comes */
                 goto out;
             }
 
+			/* re-acquire the semaphore lock, and continue with read */
 			if (down_interruptible(&state->lock)) {
 				ret = -ERESTARTSYS;
 				goto out;			
@@ -267,10 +280,8 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 	/* Determine the number of cached bytes to copy to userspace */
 	bytes_to_copy = state->buf_lim - *f_pos; 
 
-	/* Handle EOF mode - Auto-rewind */
-	if (bytes_to_copy <= 0) {
-		*f_pos = 0;
-		bytes_to_copy = state->buf_lim;
+	/* Handle EOF mode */
+	if (bytes_to_copy < 0) {
 		ret = 0;
 		goto out;
 	}
@@ -284,6 +295,10 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 
 	*f_pos += cnt;
 	ret = cnt;
+	bytes_to_copy = state->buf_lim - *f_pos;
+
+	if (bytes_to_copy == 0)
+		*f_pos = 0;
 
 out:
 	debug("Leaving read..., with ret = %d", ret);
