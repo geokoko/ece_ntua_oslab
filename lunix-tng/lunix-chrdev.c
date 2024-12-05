@@ -140,7 +140,7 @@ static int lunix_chrdev_open(struct inode *inode, struct file *filp)
 {
 	unsigned int minor = iminor(inode); // extract minor number from passed inode
 	unsigned int major = imajor(inode); // extract major number from passed inode
-	unsigned int sensor_id = minor >> 3;       // Extract sensor ID (divide minor_no by 3 and see which sensor number it has)
+	unsigned int sensor_id = minor >> 3;       // Extract sensor ID (divide minor_no by 8 and see which sensor number it has)
 	unsigned int measurement_type = minor & 7; // Extract measurement type (take the modulo of the division with 8, which will give the measurement type)
 
 	/* Allocate a new Lunix character device private state structure (including its buffer) */
@@ -297,6 +297,7 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 	ret = cnt;
 	bytes_to_copy = state->buf_lim - *f_pos;
 
+	/* Re-wind on EOF */
 	if (bytes_to_copy == 0)
 		*f_pos = 0;
 
