@@ -1,1 +1,0 @@
-savedcmd_/home/user/shared/oslab/fs/ext2-lite.mod := printf '%s\n'   balloc.o dir.o file.o ialloc.o inode.o namei.o super.o | awk '!x[$$0]++ { print("/home/user/shared/oslab/fs/"$$0) }' > /home/user/shared/oslab/fs/ext2-lite.mod

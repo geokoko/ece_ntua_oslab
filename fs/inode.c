@@ -254,7 +254,9 @@ static struct ext2_inode *ext2_get_inode(struct super_block *sb, ino_t ino,
 		goto eio;
 
 	/* Figure out the offset within the block group inode table */
+	/* Calculate byte offset to the specific block group */
 	offset = ((ino - 1) % EXT2_INODES_PER_GROUP(sb)) * EXT2_INODE_SIZE(sb);
+	/* Calculate block offset with repsect to the block group inode table start */ 
 	block = le32_to_cpu(gdp->bg_inode_table) + (offset >> EXT2_BLOCK_SIZE_BITS(sb));
 	if (!(bh = sb_bread(sb, block)))
 		goto eio;

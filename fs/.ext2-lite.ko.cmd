@@ -1,1 +1,0 @@
-savedcmd_/home/user/shared/oslab/fs/ext2-lite.ko := ld -r -m elf_x86_64 -z noexecstack --build-id=sha1  -T scripts/module.lds -o /home/user/shared/oslab/fs/ext2-lite.ko /home/user/shared/oslab/fs/ext2-lite.o /home/user/shared/oslab/fs/ext2-lite.mod.o
