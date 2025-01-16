@@ -796,8 +796,8 @@ static void __exit exit_ext2_fs(void)
     printk(KERN_INFO "ext2-lite: Inode cache destroyed\n");
 }
 
-MODULE_AUTHOR("Kokoromytis Georgios, Kostas Fratzeskos");
+MODULE_AUTHOR("Kokoromytis Georgios, Kostas Fratzeskos, CSLab team");
 MODULE_DESCRIPTION("Second Extended Filesystem Lite Version from CSLab");
 MODULE_LICENSE("GPL");
-module_init(init_ext2_fs)
-module_exit(exit_ext2_fs)
+module_init(init_ext2_fs);
+module_exit(exit_ext2_fs);

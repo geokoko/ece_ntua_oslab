@@ -247,25 +247,57 @@ static int ext2_readdir(struct file *file, struct dir_context *ctx)
  * Folio is returned mapped and unlocked.
  * Entry is guaranteed to be valid.
  */
-ext2_dirent *ext2_find_entry(struct inode *dir, const struct qstr *child,
-                             struct folio **foliop)
+ext2_dirent *ext2_find_entry(struct inode *dir, const struct qstr *child, struct folio **foliop)
 {
 	const char *name = child->name;
 	int namelen = child->len;
 	unsigned reclen = EXT2_DIR_REC_LEN(namelen);
-	unsigned long npages = dir_pages(dir);
 	unsigned long i;
+	unsigned long npages = dir_pages(dir);
+	struct ext2_inode_info *ei = EXT2_I(dir);
 	ext2_dirent *de;
-	char *kaddr;
 
 	if (npages == 0)
-		return ERR_PTR(-ENOENT);
+		goto out;
+	
+	for (i = 0; i < npages; i++)
+	{
+		/* Load the address of a folio (basically a chunk of memory pages) into kernel address space */
+		char *kaddr = ext2_get_folio(dir, i, 0, foliop);
+		if (IS_ERR(kaddr))
+			goto out;
+		
+		/* Initialize a dirent pointer to the address buffer, where the pages data lies */
+		de = (ext2_dirent *)kaddr;
+		/* Move kaddr pointer at the end of the page */
+		kaddr += ext2_last_byte(dir, i) - reclen;
 
-	/* Scan all the pages of the directory to find the requested name. */
-	for (i=0; i < npages; i++) {
-		/* ? */
+		/* Traverse the directory entries in the page */
+		while ((char *)de <= kaddr)
+		{
+			/* If length of dirent is zero, there is no result */
+			if (de->rec_len == 0)
+			{
+				printk(KERN_ERR "ext2_find_entry: zero-length directory entry\n");
+				folio_release_kmap(*foliop, de);
+				goto out;
+			}
+
+			/* If the name matches, return the dirent */
+			if (ext2_match(namelen, name, de))
+				goto found;
+			de = ext2_next_entry(de);
+		}
+
+		/* Release the folio */
+		folio_release_kmap(*foliop, kaddr);
 	}
+
+out:
 	return ERR_PTR(-ENOENT);
+
+found:
+	return de;
 }
 
 ext2_dirent *ext2_dotdot(struct inode *dir, struct folio **foliop)

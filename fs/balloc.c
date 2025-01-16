@@ -307,7 +307,6 @@ void ext2_free_blocks(struct inode *inode, unsigned long block, unsigned long co
  * Returns the group offset of the first allocated block and the number of
  * blocks it managed to allocate (using the count parameter).
  */
-/* ? */
 /* You can use find_next_zero_bit_le() and ext2_set_bit_atomic() functions to 
  * handle the bitmaps.
  */
@@ -319,9 +318,29 @@ static int ext2_allocate_in_bg(struct super_block *sb, int group,
 	ext2_grpblk_t nblocks = group_last_block - group_first_block + 1;
 	ext2_grpblk_t first_free_bit;
 	unsigned long num;
+	unsigned long i, free_to_use;
+	
+	num = find_next_zero_bit_le(bitmap_bh->b_data, (unsigned long) nblocks, 0);
+	ext2_debug("first free bit: %lu\n", num);
+	ext2_debug("try to allocate %lu blocks", *count);
 
-	/* ? */
-	return -1;
+	if (num >= nblocks) {
+		*count = 0;
+		ext2_debug("no free blocks in this group\n");
+		return -1;
+	}
+
+	if (num + *count > nblocks)
+		*count = nblocks - num;
+	
+	for (i = 0; i < *count; i++) {
+		if (!ext2_set_bit_atomic(sb_bgl_lock(EXT2_SB(sb), group), num + i, bitmap_bh->b_data)) {
+			ext2_error(sb, __func__, "bit already set for block %lu", group_first_block + num + i);
+			break;
+		}
+	}
+
+	return (int)num;
 }
 
 /*
